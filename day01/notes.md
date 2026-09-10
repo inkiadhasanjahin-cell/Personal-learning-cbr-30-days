@@ -7,7 +7,7 @@
 	 d.cryptohack(solved a cipher and added account)
 	 e.bookmarked cyberchef
 	
-#installed some tolls in my pc:
+#installed some tools in my pc:
 	a.wireshark
 	b.burpsuit
 	c.john
