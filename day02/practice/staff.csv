@@ -1,0 +1,8 @@
+cat > staff.csv << 'EOF'
+name,dept,salary
+Alice,Engineering,95000
+Bob,Sales,62000
+Carol,Engineering,88000
+Dave,Marketing,71000
+Eve,Sales,67000
+EOF

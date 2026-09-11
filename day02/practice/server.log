@@ -1,0 +1,9 @@
+cat > server.log << 'EOF'
+2024-01-15 10:23:01 ERROR user=alice ip=192.168.1.10 msg="login failed"
+2024-01-15 10:23:45 INFO  user=bob   ip=192.168.1.12 msg="login success"
+2024-01-15 10:24:02 ERROR user=alice ip=192.168.1.10 msg="login failed"
+2024-01-15 10:25:10 WARN  user=carol ip=10.0.0.5     msg="disk space low"
+2024-01-15 10:26:33 INFO  user=dave  ip=192.168.1.15 msg="file uploaded"
+2024-01-15 10:27:59 ERROR user=eve   ip=10.0.0.9     msg="permission denied"
+2024-01-15 10:29:14 INFO  user=bob   ip=192.168.1.12 msg="logout"
+EOF
