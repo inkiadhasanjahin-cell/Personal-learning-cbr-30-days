@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jeopardy-Style CTF — Foundations</title>
+<style>
+  :root{
+    --bg:#0a0e14;
+    --panel:#111722;
+    --panel2:#0d1420;
+    --border:#1f2937;
+    --green:#39ff88;
+    --amber:#ffb454;
+    --red:#ff5c5c;
+    --blue:#5cc8ff;
+    --purple:#c792ea;
+    --text:#c9d1d9;
+    --dim:#6b7280;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Fira Code','Consolas','Courier New',monospace;
+    line-height:1.6;
+    margin:0;
+    padding:0 0 80px 0;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px;}
+  header{
+    background:linear-gradient(180deg,#0d1420,#0a0e14);
+    border-bottom:1px solid var(--border);
+    padding:36px 20px 24px;
+    text-align:center;
+  }
+  header h1{
+    color:var(--green);
+    font-size:1.8em;
+    margin:0 0 6px;
+    text-shadow:0 0 12px rgba(57,255,136,0.35);
+  }
+  header .sub{color:var(--dim);font-size:0.95em;}
+  .prompt{color:var(--amber);}
+  nav{
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    margin:24px auto;
+    padding:16px 20px;
+    max-width:920px;
+  }
+  nav h2{margin-top:0;color:var(--blue);font-size:1em;letter-spacing:1px;}
+  nav ol{margin:0;padding-left:22px;columns:2;}
+  nav a{color:var(--text);text-decoration:none;border-bottom:1px dashed var(--dim);}
+  nav a:hover{color:var(--green);}
+  section{
+    margin:36px auto;
+    padding:22px 24px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+  }
+  h2{
+    color:var(--green);
+    border-bottom:1px solid var(--border);
+    padding-bottom:8px;
+    font-size:1.35em;
+  }
+  h3{color:var(--blue);font-size:1.1em;margin-top:28px;}
+  h4{color:var(--amber);margin-bottom:6px;}
+  p{margin:10px 0;}
+  code, .flag{
+    background:#0d1420;
+    border:1px solid var(--border);
+    padding:2px 6px;
+    border-radius:4px;
+    color:var(--amber);
+    font-size:0.95em;
+  }
+  ul, ol{padding-left:22px;}
+  li{margin:6px 0;}
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:14px 0;
+    font-size:0.92em;
+  }
+  th,td{
+    border:1px solid var(--border);
+    padding:8px 10px;
+    text-align:left;
+    vertical-align:top;
+  }
+  th{background:#0d1420;color:var(--blue);}
+  tr:nth-child(even){background:#0d1420aa;}
+  .callout{
+    border-left:3px solid var(--blue);
+    background:#0d1420;
+    padding:10px 14px;
+    margin:14px 0;
+    border-radius:0 6px 6px 0;
+  }
+  .callout.warn{border-left-color:var(--red);}
+  .callout.tip{border-left-color:var(--green);}
+  details{
+    background:#0d1420;
+    border:1px solid var(--border);
+    border-radius:6px;
+    margin:10px 0;
+    padding:10px 14px;
+  }
+  summary{
+    cursor:pointer;
+    color:var(--purple);
+    font-weight:bold;
+    outline:none;
+  }
+  summary::marker{color:var(--green);}
+  details[open] summary{color:var(--green);}
+  .details-body{margin-top:10px;border-top:1px dashed var(--border);padding-top:10px;}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:14px;
+    margin:14px 0;
+  }
+  .card{
+    background:#0d1420;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:14px 16px;
+  }
+  .card h4{margin-top:0;}
+  .tag{
+    display:inline-block;
+    font-size:0.75em;
+    padding:2px 8px;
+    border-radius:12px;
+    margin-right:6px;
+    margin-bottom:4px;
+  }
+  .tag.easy{background:#123;color:var(--green);border:1px solid var(--green);}
+  .tag.med{background:#221a08;color:var(--amber);border:1px solid var(--amber);}
+  .tag.hard{background:#2a0f0f;color:var(--red);border:1px solid var(--red);}
+  .bar-row{display:flex;align-items:center;gap:10px;margin:8px 0;}
+  .bar-label{width:150px;font-size:0.85em;color:var(--dim);flex-shrink:0;}
+  .bar-track{flex:1;background:#0d1420;border:1px solid var(--border);border-radius:4px;overflow:hidden;height:18px;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--blue));}
+  .bar-val{width:40px;text-align:right;font-size:0.85em;color:var(--text);}
+  .quiz-q{margin:18px 0;padding:14px;background:#0d1420;border:1px solid var(--border);border-radius:8px;}
+  .quiz-q p.q-text{color:var(--text);font-weight:bold;margin-bottom:8px;}
+  input.flag-input{
+    background:#0a0e14;
+    border:1px solid var(--border);
+    color:var(--green);
+    padding:8px 10px;
+    border-radius:6px;
+    font-family:inherit;
+    width:100%;
+    max-width:360px;
+  }
+  button.check-btn{
+    background:#123;
+    border:1px solid var(--green);
+    color:var(--green);
+    padding:8px 14px;
+    border-radius:6px;
+    font-family:inherit;
+    cursor:pointer;
+    margin-left:8px;
+  }
+  button.check-btn:hover{background:var(--green);color:#0a0e14;}
+  .result{margin-top:8px;font-weight:bold;}
+  .result.ok{color:var(--green);}
+  .result.bad{color:var(--red);}
+  footer{text-align:center;color:var(--dim);margin-top:40px;font-size:0.85em;}
+  .toc-back{display:block;text-align:right;font-size:0.8em;margin-top:6px;}
+  .toc-back a{color:var(--dim);text-decoration:none;}
+  .toc-back a:hover{color:var(--blue);}
+  .cheat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.9em;}
+  @media(max-width:640px){.cheat-grid{grid-template-columns:1fr;} nav ol{columns:1;}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>&gt; jeopardy_ctf --learn --deep</h1>
+  <div class="sub">Foundations: format, flags, scoring &amp; the major category board <span class="prompt">_</span></div>
+</header>
+
+<div class="wrap">
+
+<nav id="top">
+  <h2>// TABLE OF CONTENTS</h2>
+  <ol>
+    <li><a href="#sec1">What is a Jeopardy-style CTF?</a></li>
+    <li><a href="#sec2">Flag Formats</a></li>
+    <li><a href="#sec3">Scoring Systems</a></li>
+    <li><a href="#sec4">The Major Categories</a></li>
+    <li><a href="#sec5">Point Weighting in Practice</a></li>
+    <li><a href="#sec6">Practice Zone (Quiz + Exercises)</a></li>
+    <li><a href="#sec7">One-Page Cheat Sheet</a></li>
+  </ol>
+</nav>
+
+<!-- SECTION 1 -->
+<section id="sec1">
+  <h2>1. What Is a Jeopardy-Style CTF?</h2>
+  <p>
+    A <strong>Capture The Flag (CTF)</strong> competition is a security exercise where you solve challenges
+    to find a hidden secret string — the <strong>flag</strong> — and submit it for points. There are two
+    dominant formats:
+  </p>
+  <div class="grid">
+    <div class="card">
+      <h4>🏆 Jeopardy-style</h4>
+      <p>A board of independent challenges grouped into categories, exactly like the TV game show. Teams pick
+      any challenge, solve it, submit the flag, earn points. No direct interaction with other teams' systems.
+      This is the format used by <code>picoCTF</code>, <code>HackTheBox CTFs</code>, <code>DEF CON quals</code>
+      (mostly), and nearly every beginner/intermediate CTF.</p>
+    </div>
+    <div class="card">
+      <h4>⚔️ Attack-Defense</h4>
+      <p>Each team runs identical vulnerable services on their own machine. You must patch your own bugs while
+      exploiting the same bugs on opponents' machines to steal <em>their</em> flags. Real-time, much harder to
+      run and to play. Not the focus of this note.</p>
+    </div>
+  </div>
+
+  <h3>The Board</h3>
+  <p>
+    Picture an actual Jeopardy board: columns are <strong>categories</strong> (Web, Crypto, Pwn...), rows are
+    <strong>point values</strong> that usually track difficulty (100 → easy, 500 → hard). You choose challenges
+    in any order — there's no forced sequence, which means <strong>triage</strong> (deciding what to attempt
+    first) is itself a skill.
+  </p>
+
+  <div class="callout tip">
+    <strong>Key mental model:</strong> a jeopardy CTF is really just a stack of independent puzzle boxes.
+    Each category tests a different skill domain. You don't need to be good at all of them — most teams
+    specialize and trade challenges internally.
+  </div>
+
+  <h3>Typical Event Structure</h3>
+  <ul>
+    <li><strong>Duration:</strong> anywhere from a few hours (local/university CTFs) to 48 hours (major
+    international ones like DEF CON, HITCON, or Google CTF).</li>
+    <li><strong>Team size:</strong> solo or teams up to ~4-8, depending on the event's rules.</li>
+    <li><strong>Platform:</strong> a scoreboard site (CTFd is the most common open-source platform) shows
+    live rankings, challenge descriptions, attached files or connection strings (<code>nc host port</code>),
+    and a flag submission box.</li>
+    <li><strong>Hints:</strong> often available but cost points when unlocked.</li>
+  </ul>
+</section>
+
+<!-- SECTION 2 -->
+<section id="sec2">
+  <h2>2. Flag Formats</h2>
+  <p>
+    The flag is a string that proves you actually solved the challenge (rather than just claiming you did).
+    Almost every platform wraps the secret content in a recognizable <strong>wrapper format</strong> so that:
+  </p>
+  <ul>
+    <li>Automated scoring can validate submissions with a simple regex.</li>
+    <li>Players can visually confirm "yes, this looks like a flag" before submitting.</li>
+    <li>Copy-paste errors (extra whitespace, wrong case) are easier to spot.</li>
+  </ul>
+
+  <h3>Common wrapper conventions</h3>
+  <table>
+    <tr><th>Event / Platform</th><th>Format</th><th>Example</th></tr>
+    <tr><td>picoCTF</td><td><code>picoCTF{...}</code></td><td><code>picoCTF{f14g_h4x0r_42}</code></td></tr>
+    <tr><td>HackTheBox</td><td><code>HTB{...}</code></td><td><code>HTB{y0u_f0und_m3}</code></td></tr>
+    <tr><td>Generic / most CTFd events</td><td><code>flag{...}</code> or <code>CTF{...}</code></td><td><code>flag{s0_that5_1t}</code></td></tr>
+    <tr><td>DEF CON style</td><td>Often no wrapper — a raw string</td><td><code>d3fc0n_2026_x9k2</code></td></tr>
+  </table>
+
+  <div class="callout">
+    <strong>Anatomy:</strong> <code>flag{ <span style="color:var(--blue)">this_part_is_the_secret</span> }</code>
+    — the braces and prefix are constant per-event; only the inside changes per challenge. Some events
+    randomize the wrapper's inner casing or add a checksum suffix to prevent flag-sharing between teams
+    (called a <em>dynamic</em> or <em>per-team</em> flag).
+  </div>
+
+  <h3>Why the format matters practically</h3>
+  <ol>
+    <li><strong>Sanity check:</strong> if your exploit outputs something that doesn't resemble
+    <code>flag{...}</code>, you probably haven't reached the actual secret yet — keep digging.</li>
+    <li><strong>grep-ability:</strong> once you know the format, you can search dumped memory, files, or
+    network captures directly: <code>grep -a -o "flag{[^}]*}" dump.bin</code>.</li>
+    <li><strong>Case &amp; whitespace sensitivity:</strong> most scoring engines do an exact string match.
+    Trailing newlines or a stray capital letter will cause a "wrong flag" even if you solved the challenge.</li>
+  </ol>
+
+  <div class="callout warn">
+    <strong>Common beginner mistake:</strong> submitting only the inside content without the
+    <code>flag{ }</code> wrapper, or including the challenge's example placeholder text by accident. Always
+    read the challenge description for the exact required format — it's usually stated explicitly.
+  </div>
+</section>
+
+<!-- SECTION 3 -->
+<section id="sec3">
+  <h2>3. Scoring Systems</h2>
+  <p>Two scoring philosophies dominate jeopardy CTFs:</p>
+
+  <h3>A. Static Scoring</h3>
+  <p>
+    Each challenge has a fixed point value set by the organizers ahead of time, based on their estimate of
+    difficulty. Simple, predictable, but can misjudge difficulty (a "500-point" challenge that turns out to
+    be easy devalues harder ones once everyone solves it).
+  </p>
+
+  <h3>B. Dynamic ("Decay") Scoring</h3>
+  <p>
+    A challenge starts at a high value and <strong>decreases</strong> as more teams solve it, following a
+    curve (often set by <em>minimum points</em>, <em>maximum points</em>, and a <em>decay function</em>
+    based on solve count). This rewards being among the first solvers and self-corrects for
+    misjudged difficulty — a challenge everyone finds easy naturally drops toward its floor value.
+  </p>
+  <div class="callout">
+    A common CTFd decay formula (simplified):<br>
+    <code>points = max(minimum, initial − ((initial − minimum) / decay_constant) × (solves − 1))</code><br>
+    In plain terms: the more teams that solve it, the closer it falls toward the floor value.
+  </div>
+
+  <h3>Bonus mechanics you'll see layered on top</h3>
+  <table>
+    <tr><th>Mechanic</th><th>What it does</th></tr>
+    <tr><td>First Blood</td><td>Extra bonus points (or a badge) for the very first team to solve a challenge.</td></tr>
+    <tr><td>Hint penalty</td><td>Unlocking a hint deducts a fixed amount from that challenge's max value.</td></tr>
+    <tr><td>Tiebreaker</td><td>When total score ties, the team that reached that score <em>earliest</em> ranks higher.</td></tr>
+    <tr><td>Category multiplier (rare)</td><td>Some events weight an entire category up/down to nudge diversity of skills.</td></tr>
+  </table>
+
+  <div class="callout tip">
+    <strong>Strategic takeaway:</strong> under decay scoring, solving something fast (before the crowd) is
+    worth disproportionately more than solving it late. This is why strong teams "rush" easy/medium
+    challenges in the first hour, then settle into harder ones once the board has thinned out.
+  </div>
+</section>
+
+<!-- SECTION 4 -->
+<section id="sec4">
+  <h2>4. The Major Categories</h2>
+  <p>
+    Nearly every jeopardy CTF board is built from some subset of these six pillars. Depth in even two or
+    three of them is enough to be a strong contributor to a team.
+  </p>
+
+  <div class="grid">
+    <div class="card">
+      <h4>🌐 Web Exploitation</h4>
+      <span class="tag easy">Beginner-friendly</span>
+      <p>Attacking web apps: SQL injection, XSS, authentication bypass, IDOR, SSRF, insecure deserialization,
+      template injection. Tools: browser dev tools, Burp Suite, <code>curl</code>.</p>
+    </div>
+    <div class="card">
+      <h4>🔐 Cryptography</h4>
+      <span class="tag easy">Beginner–Advanced</span>
+      <p>Breaking or abusing weak/misused crypto: classical ciphers, RSA math attacks, weak randomness, hash
+      length-extension, padding oracle attacks. Tools: <code>Python</code>, <code>CyberChef</code>,
+      <code>SageMath</code>.</p>
+    </div>
+    <div class="card">
+      <h4>🧬 Reverse Engineering (RE)</h4>
+      <span class="tag med">Intermediate</span>
+      <p>Understanding compiled binaries without source: disassembling, decompiling, tracing logic to find a
+      hidden check or the flag itself. Tools: <code>Ghidra</code>, <code>IDA Free</code>, <code>gdb</code>.</p>
+    </div>
+    <div class="card">
+      <h4>💥 Binary Exploitation (Pwn)</h4>
+      <span class="tag hard">Advanced</span>
+      <p>Exploiting memory-corruption bugs in running programs: buffer overflows, format string bugs, ROP
+      chains, heap exploitation, to hijack control flow and read a flag off a remote server. Tools:
+      <code>pwntools</code>, <code>gdb + pwndbg</code>, <code>checksec</code>.</p>
+    </div>
+    <div class="card">
+      <h4>🕵️ Forensics</h4>
+      <span class="tag easy">Beginner–Intermediate</span>
+      <p>Digging through artifacts: disk/memory images, packet captures (<code>.pcap</code>), file carving,
+      steganography, metadata analysis. Tools: <code>Wireshark</code>, <code>Autopsy</code>,
+      <code>binwalk</code>, <code>exiftool</code>.</p>
+    </div>
+    <div class="card">
+      <h4>🎲 Misc / OSINT</h4>
+      <span class="tag easy">Grab-bag</span>
+      <p>Anything that doesn't fit elsewhere: puzzle logic, esoteric encodings, open-source intelligence
+      (finding info about a person/organization publicly), scripting challenges, sometimes even trivia.</p>
+    </div>
+  </div>
+
+  <h3>How categories map to skills you're already building</h3>
+  <p>
+    Your Python-for-cybersecurity track feeds directly into <strong>Crypto</strong> (scripting attacks) and
+    <strong>Misc</strong> (automation/parsing), while your Linux roadmap underpins <strong>Forensics</strong>
+    and <strong>Pwn</strong> (comfort with the command line, permissions, and debugging tools is assumed
+    baseline in both).
+  </p>
+</section>
+
+<!-- SECTION 5 -->
+<section id="sec5">
+  <h2>5. Point Weighting in Practice</h2>
+  <p>
+    There's no universal rulebook, but across most beginner-to-mid-tier CTFs (picoCTF-style), a rough
+    pattern holds: categories requiring lower-level systems knowledge (Pwn, RE) are weighted heavier per
+    challenge because fewer teams can solve them, while categories with a large easy on-ramp (Web, Misc,
+    Forensics) have more <em>total</em> challenges but a wider spread from very easy to very hard.
+  </p>
+
+  <h3>Illustrative weighting (typical beginner/intermediate event)</h3>
+  <div class="bar-row"><div class="bar-label">Web Exploitation</div><div class="bar-track"><div class="bar-fill" style="width:65%"></div></div><div class="bar-val">100–400</div></div>
+  <div class="bar-row"><div class="bar-label">Cryptography</div><div class="bar-track"><div class="bar-fill" style="width:60%"></div></div><div class="bar-val">100–400</div></div>
+  <div class="bar-row"><div class="bar-label">Forensics</div><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><div class="bar-val">100–350</div></div>
+  <div class="bar-row"><div class="bar-label">Reverse Eng.</div><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div><div class="bar-val">200–500</div></div>
+  <div class="bar-row"><div class="bar-label">Pwn</div><div class="bar-track"><div class="bar-fill" style="width:95%"></div></div><div class="bar-val">250–600</div></div>
+  <div class="bar-row"><div class="bar-label">Misc / OSINT</div><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div><div class="bar-val">50–250</div></div>
+
+  <div class="callout">
+    Bar length here represents relative <em>typical difficulty ceiling</em>, not literal point totals —
+    exact numbers vary hugely by event. The pattern to internalize: <strong>Pwn &gt; RE &gt; Web ≈ Crypto
+    &gt; Forensics &gt; Misc</strong> in terms of how high their point ceiling usually climbs.
+  </div>
+
+  <h3>Why organizers weight it this way</h3>
+  <ul>
+    <li><strong>Solve-rate correlation:</strong> point value is a proxy for "how many teams are expected to
+    solve this." Pwn/RE challenges typically have the lowest solve counts across an entire event.</li>
+    <li><strong>Prerequisite stacking:</strong> Pwn challenges often require RE skills first (you must
+    reverse-engineer the binary before you can exploit it), compounding difficulty and justifying higher
+    value.</li>
+    <li><strong>Category balance:</strong> organizers deliberately keep Misc/Forensics point ceilings lower
+    so the scoreboard isn't dominated purely by teams with one narrow specialty.</li>
+  </ul>
+</section>
+
+<!-- SECTION 6 -->
+<section id="sec6">
+  <h2>6. Practice Zone</h2>
+
+  <h3>🧠 Concept Quiz (click to reveal answers)</h3>
+
+  <div class="quiz-q">
+    <p class="q-text">Q1. In a decay-scoring CTF, why does solving a challenge in the first 30 minutes matter more than solving the same challenge 6 hours later?</p>
+    <details><summary>Reveal answer</summary>
+      <div class="details-body">Because the point value decreases as more teams solve it — early solvers
+      lock in a value close to the challenge's maximum, while later solvers get a value closer to the
+      floor. The exact same solve is worth objectively fewer points later in the event.</div>
+    </details>
+  </div>
+
+  <div class="quiz-q">
+    <p class="q-text">Q2. You extract a string <code>picoctf{maybe_this_1s_it}</code> from a binary (lowercase, no closing detail issue). The event's rules state the format is <code>picoCTF{...}</code>. What's the most likely reason submission will fail?</p>
+    <details><summary>Reveal answer</summary>
+      <div class="details-body">Case mismatch — <code>picoctf</code> vs the required <code>picoCTF</code>.
+      Scoring engines usually do exact, case-sensitive string matching, so the prefix casing must match
+      exactly even if the inner secret content is correct.</div>
+    </details>
+  </div>
+
+  <div class="quiz-q">
+    <p class="q-text">Q3. A challenge is tagged "500 points" and sits under the Pwn column. Based on typical point-weighting patterns, what does that placement + value tell you before you even open the challenge?</p>
+    <details><summary>Reveal answer</summary>
+      <div class="details-body">It's likely near the top of the event's overall difficulty ceiling — Pwn
+      challenges usually carry the highest point ceilings of any category because they require chaining
+      RE + low-level exploitation skill, and solve rates tend to be very low.</div>
+    </details>
+  </div>
+
+  <div class="quiz-q">
+    <p class="q-text">Q4. What's the practical difference between Jeopardy-style and Attack-Defense CTF formats in terms of what you're defending?</p>
+    <details><summary>Reveal answer</summary>
+      <div class="details-body">In Jeopardy-style, there is nothing to defend — you only solve independent
+      challenges to extract flags. In Attack-Defense, you run a live vulnerable service that opponents can
+      actively exploit, so you must simultaneously patch your own service while attacking theirs.</div>
+    </details>
+  </div>
+
+  <h3>🚩 Exercise: Spot the Valid Flag</h3>
+  <p>Assume the event's required format is exactly <code>flag{lowercase_snake_case}</code> — lowercase
+  letters, digits, and underscores only, inside <code>flag{ }</code>. Try each input below:</p>
+
+  <div class="quiz-q">
+    <input type="text" class="flag-input" id="f1" placeholder="e.g. flag{try_something}">
+    <button class="check-btn" onclick="checkFlag('f1','r1')">Validate</button>
+    <div id="r1" class="result"></div>
+  </div>
+  <details>
+    <summary>Show test cases to try</summary>
+    <div class="details-body">
+      Try each of these one at a time in the box above and read the feedback:
+      <ul>
+        <li><code>flag{n1c3_j0b}</code> — should be valid</li>
+        <li><code>Flag{n1c3_j0b}</code> — invalid (capital F)</li>
+        <li><code>flag{N1C3_J0B}</code> — invalid (uppercase inside)</li>
+        <li><code>flag(n1c3_j0b)</code> — invalid (wrong brackets)</li>
+        <li><code>flag{n1c3-j0b}</code> — invalid (hyphen instead of underscore)</li>
+      </ul>
+    </div>
+  </details>
+
+  <h3>🧮 Exercise: Scoring Math</h3>
+  <div class="quiz-q">
+    <p class="q-text">
+      A challenge uses decay scoring: <code>initial = 500</code>, <code>minimum = 100</code>,
+      <code>decay_constant = 20</code>. Using
+      <code>points = max(minimum, initial − ((initial − minimum)/decay_constant) × (solves − 1))</code>,
+      what is the challenge worth after the <strong>6th</strong> team solves it?
+    </p>
+    <details><summary>Work through it / reveal answer</summary>
+      <div class="details-body">
+        (initial − minimum) = 400. 400 / 20 = 20 points lost per solve after the first.<br>
+        solves − 1 = 5 → 5 × 20 = 100 points decayed.<br>
+        500 − 100 = <strong>400 points</strong> for the 6th solver.<br>
+        Try it yourself for the 25th solver — does it hit the floor of 100 before then?
+        (400/20 = 20 → floor is reached once solves−1 ≥ 20, i.e. the 21st solver onward gets exactly 100.)
+      </div>
+    </details>
+  </div>
+
+  <h3>🗂️ Exercise: Category Sorting</h3>
+  <p>For each scenario, name the most likely category before revealing:</p>
+  <div class="quiz-q">
+    <p class="q-text">a) You're given a <code>.pcap</code> file and told "something was exfiltrated over DNS."</p>
+    <details><summary>Answer</summary><div class="details-body">Forensics (network traffic analysis).</div></details>
+  </div>
+  <div class="quiz-q">
+    <p class="q-text">b) You're given a compiled ELF binary and a remote <code>nc</code> connection string, and the goal is to get a shell.</p>
+    <details><summary>Answer</summary><div class="details-body">Binary Exploitation (Pwn) — likely with a Reverse Engineering step first to understand the binary.</div></details>
+  </div>
+  <div class="quiz-q">
+    <p class="q-text">c) You're given <code>n</code>, <code>e</code>, and a ciphertext, and told the RSA modulus was generated with two very close primes.</p>
+    <details><summary>Answer</summary><div class="details-body">Cryptography (this describes a Fermat factorization attack scenario).</div></details>
+  </div>
+  <div class="quiz-q">
+    <p class="q-text">d) A login form is vulnerable to bypassing authentication by injecting <code>' OR '1'='1</code>.</p>
+    <details><summary>Answer</summary><div class="details-body">Web Exploitation (classic SQL injection).</div></details>
+  </div>
+
+  <h3>📝 Reflection prompts (write your own answers, no reveal)</h3>
+  <ul>
+    <li>Given your current background (Python fundamentals, Linux comfort, foundational networking), which
+    2 categories would you triage toward first in an actual event, and why?</li>
+    <li>If your team has 4 members with different strengths, sketch how you'd divide the board across
+    Web / Crypto / Forensics / Misc for the first hour of a 24-hour event.</li>
+    <li>Pick one picoCTF practice challenge in a category you're weakest in and time-box 45 minutes to
+    attempt it before checking a writeup.</li>
+  </ul>
+</section>
+
+<!-- SECTION 7 -->
+<section id="sec7">
+  <h2>7. One-Page Cheat Sheet</h2>
+  <div class="cheat-grid">
+    <div class="card">
+      <h4>Format Quick Facts</h4>
+      <ul>
+        <li>Flag = proof of solve, wrapped as <code>tag{secret}</code></li>
+        <li>Match is usually exact &amp; case-sensitive</li>
+        <li>grep pattern: <code>grep -aoE "flag\{[^}]*\}"</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Scoring Quick Facts</h4>
+      <ul>
+        <li>Static = fixed value, set upfront</li>
+        <li>Dynamic/decay = value drops as solves increase</li>
+        <li>First blood = bonus for first solver</li>
+        <li>Hints usually cost points</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Category → Core Tool</h4>
+      <ul>
+        <li>Web → Burp Suite / browser devtools</li>
+        <li>Crypto → Python / CyberChef</li>
+        <li>RE → Ghidra / gdb</li>
+        <li>Pwn → pwntools / pwndbg</li>
+        <li>Forensics → Wireshark / binwalk</li>
+        <li>Misc → whatever the puzzle demands</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Difficulty Ceiling Order</h4>
+      <p>Pwn &gt; RE &gt; (Web ≈ Crypto) &gt; Forensics &gt; Misc</p>
+      <p style="color:var(--dim);font-size:0.85em;">(rule of thumb, not universal)</p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap">jeopardy_ctf_foundations.html — self-contained study note, no external dependencies</div>
+</footer>
+
+<script>
+function checkFlag(inputId, resultId){
+  var val = document.getElementById(inputId).value;
+  var resultEl = document.getElementById(resultId);
+  var pattern = /^flag\{[a-z0-9_]+\}$/;
+  if(pattern.test(val)){
+    resultEl.textContent = "✅ Valid format: matches flag{lowercase_snake_case}";
+    resultEl.className = "result ok";
+  } else {
+    resultEl.textContent = "❌ Invalid — check case, brackets, or allowed characters (a-z, 0-9, _ only)";
+    resultEl.className = "result bad";
+  }
+}
+</script>
+
+</body>
+</html>
